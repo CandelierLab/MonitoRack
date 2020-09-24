@@ -12,7 +12,7 @@ switch computer
         
     case 'GLNXA64'
         test = {'/home/ljp/Science/Projects/Behavior/MonitoRack/' ...
-            '/home/raphael/Science/Projects/Behavior/MonitoRack'};
+            '/home/raphael/Science/Projects/Behavior/MonitoRack/'};
 end
 
 for i = 1:numel(test) 
