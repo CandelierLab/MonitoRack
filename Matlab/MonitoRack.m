@@ -69,13 +69,17 @@ drawnow
 
 % === Indicator ===========================================================
 
-instrreset;
-p = serialportlist("available");
-sInd = serial(p); 
-set(sInd,'BaudRate', 115200);
-fopen(sInd);
-cout("Serial connection to indicator ... established.\n");
-pause(3)
+try
+    instrreset;
+    p = serialportlist("available");
+    sInd = serial(p);
+    set(sInd,'BaudRate', 115200);
+    fopen(sInd);
+    cout("Serial connection to indicator ... established.\n");
+    pause(3)
+catch
+    sInd = 1;
+end
 
 % === Directories and files ===============================================
 
@@ -278,14 +282,14 @@ start(vid);
     end
 
     function finish()
-               
+        
         pause(0.5);
         
         tStatus(1).ForegroundColor = [0 0 0];
         tStatus(2).ForegroundColor = [0 0 0];
         tStatus(1).String = "DONE";
         tStatus(2).String = "^_^";
-          
+        
         fprintf(sInd, 'i');
         
         pause(3)
@@ -358,7 +362,7 @@ start(vid);
         
         % Reset audio object
         clear aud;
-    
+        
         finish;
         
     end
