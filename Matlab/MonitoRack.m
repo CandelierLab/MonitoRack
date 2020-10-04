@@ -24,6 +24,9 @@ recNimg = recTime*25;
 % Number of audio samples
 recNsamples = recTime*sampleRate;
 
+% Errors
+Errors = {};
+
 % === Figure ==============================================================
 
 % --- General
@@ -78,13 +81,16 @@ try
     cout("Serial connection to indicator ... established.\n");
     pause(3)
 catch
-    sInd = 1;
+    Errors{end+1} = 'Could not establish serial connection.';
+    sInd = [];
 end
 
 % === Directories and files ===============================================
 
-% Set prepration indicator
-fprintf(sInd, 'p');
+% Set preparation indicator
+if ~isempty(sInd)
+    fprintf(sInd, 'p');
+end
 
 % --- Data directory
 
@@ -193,7 +199,12 @@ for i = 1:2
         
         break;
     catch
-        cout(" 2nd attempt ...");
+        switch i
+            case 1
+                cout(" 2nd attempt ...");
+            case 2
+                Errors{end+1} = 'Could not initialize camera.';
+        end
     end
     
 end
@@ -205,20 +216,25 @@ cout(sprintf(' %.02f sec\n', toc));
 cout("Preparing audio acquisition ...");
 tic
 
-aInfo = audiodevinfo;
-for i = 1:numel(aInfo.input)
-    if ~isempty(regexp(aInfo.input(i).Name, 'ZOOM U-22', 'once'))
-        aID = aInfo.input(i).ID;
-        break
+try
+    aInfo = audiodevinfo;
+    for i = 1:numel(aInfo.input)
+        if ~isempty(regexp(aInfo.input(i).Name, 'ZOOM U-22', 'once'))
+            aID = aInfo.input(i).ID;
+            break
+        end
     end
+    
+    aud = audiorecorder(sampleRate, 16, 1, aID);
+    aud.StopFcn = @saveAudio;
+    
+    cout(sprintf(' %.02f sec\n', toc));
+    
+    cout("Audio device id: " + aID + "\n");
+    
+catch
+    Errors{end+1} = 'Could not initialize audio.';
 end
-
-aud = audiorecorder(sampleRate, 16, 1, aID);
-aud.StopFcn = @saveAudio;
-
-cout(sprintf(' %.02f sec\n', toc));
-
-cout("Audio device id: " + aID + "\n");
 
 % === Record ==============================================================
 
@@ -234,13 +250,16 @@ try
     record(aud, recTime);
 catch
     cout('# ERROR # Unable to record audio. Aborting.\n');
+    Errors{end+1} = 'Could not record audio.';
     return
 end
 
 % --- Video
 
 % Set recording indicator
-fprintf(sInd, 'r');
+if ~isempty(sInd)
+    fprintf(sInd, 'r');
+end
 
 t0 = [];
 frameNumber = 0;
@@ -277,6 +296,9 @@ start(vid);
         catch
         end
         
+        % Error handling
+        error_handling();
+        
         delete(hObj);
         
     end
@@ -290,7 +312,9 @@ start(vid);
         tStatus(1).String = "DONE";
         tStatus(2).String = "^_^";
         
-        fprintf(sInd, 'i');
+        if ~isempty(sInd)
+            fprintf(sInd, 'i');
+        end
         
         pause(3)
         close all
@@ -364,6 +388,54 @@ start(vid);
         clear aud;
         
         finish;
+        
+    end
+
+% === Errors ==============================================================
+
+    function error_handling()
+        
+        if isempty(Errors)
+            return
+        end
+                
+        % --- Log ---------------------------------------------------------
+        
+        s = "";
+        s = s + sprintf('--- %04i-%02i-%02i @ %02ih:%02im:%02is ---\n', round(datevec(now)));
+        
+        for k = 1:numel(Errors)
+            s = s + sprintf('%s\n', Errors{k});
+        end
+                
+        lname = [recDir 'error_log.txt'];
+        fid = fopen(lname, 'a');
+        fprintf(fid, s.char);        
+        fclose(fid);
+        
+        % --- Email -------------------------------------------------------
+        
+        % parameters
+        mail = 'danionella.translucida@gmail.com';
+        password = 'Da@LJP@SU';
+        host = 'smtp.gmail.com';
+        sendto = 'raphael.candelier.ljp@gmail.com';
+        Subject = '[MonitoRack] Error';
+        Message = s.char;
+        
+        % preferences
+        setpref('Internet','SMTP_Server', host);
+        setpref('Internet','E_mail',mail);
+        setpref('Internet','SMTP_Username',mail);
+        setpref('Internet','SMTP_Password',password);
+        
+        props = java.lang.System.getProperties;
+        props.setProperty('mail.smtp.auth','true');
+        props.setProperty('mail.smtp.socketFactory.class', 'javax.net.ssl.SSLSocketFactory');
+        props.setProperty('mail.smtp.socketFactory.port','465');
+        
+        % execute
+        sendmail(sendto,Subject,Message)
         
     end
 
