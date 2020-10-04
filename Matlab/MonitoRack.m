@@ -417,7 +417,7 @@ start(vid);
         
         % parameters
         mail = 'danionella.translucida@gmail.com';
-        password = 'Da@LJP@SU';
+        password = ['Da@' 'LJP' '@SU'];
         host = 'smtp.gmail.com';
         sendto = 'raphael.candelier.ljp@gmail.com';
         Subject = '[MonitoRack] Error';
