@@ -263,7 +263,11 @@ end
 
 t0 = [];
 frameNumber = 0;
-start(vid);
+if isempty(Errors)
+    start(vid); 
+else
+    close all
+end
 
 % ### Inner Functions #####################################################
 
