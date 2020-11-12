@@ -7,9 +7,15 @@ clc
 % === Parameters ==========================================================
 
 year = 2020;
+<<<<<<< Updated upstream:Matlab/+Viewer/video.m
 month = 10;
 day = 7;
 hour = 11;
+=======
+month = 11;
+day = 03;
+hour = 13;
+>>>>>>> Stashed changes:Matlab/+Viewer/video_single.m
 
 % -------------------------------------------------------------------------
 
