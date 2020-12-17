@@ -34,6 +34,10 @@ DS.Data = [DS.root 'Data' filesep];
 
 DS.Programs = [DS.root 'Programs' filesep];
 
+% --- Files
+
+DS.Files = [DS.root 'Files' filesep];
+
 % --- Movies
 
 DS.Movies = [DS.root 'Movies' filesep];
