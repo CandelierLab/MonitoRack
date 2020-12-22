@@ -7,7 +7,7 @@ month = 10;
 day = 7;
 hour = 0;
 
-Nt = [500]; % [10 20 50 100 200 500 1000 2000];
+Nt = [10 20 50 100 200 500 1000 2000];
 
 ws = 21;
 
@@ -108,58 +108,66 @@ fprintf(' %.02f sec\n', toc);
 
 % === Iterations ==========================================================
 
-ppm = NaN(numel(Nt),1);
+% ppm = NaN(numel(Nt),1);
 
-for iter = 1:numel(Nt)
-    
-    fprintf('--- Iteration %i -----------------\n', iter);
-    
-    Nf = nnz([L(:).t]<=Nt(iter));
-    
-    % ---  Train network --------------------------------------------------
-    
-    fprintf('Train ...');
-    tic
-    
-    cat = categorical( [L(1:Nf).l]);
-    net = trainNetwork(Sfd(:,:,1,1:Nf), cat, layers, options);
-    
-%     augimds = augmentedImageDatastore([ws ws], Sfd(:,:,1,1:Nf), cat,'DataAugmentation',imageAugmenter);    
-%     net = trainNetwork(augimds, layers, options);
-    
-    fprintf(' %.02f sec\n', toc);
+% % % for iter = 1:numel(Nt)
+% % %     
+% % %     fprintf('--- Iteration %i -----------------\n', iter);
+% % %     
+% % %     Nf = nnz([L(:).t]<=Nt(iter));
+% % %     
+% % %     % ---  Train network --------------------------------------------------
+% % %     
+% % %     fprintf('Train ...');
+% % %     tic
+% % %     
+% % %     cat = categorical( [L(1:Nf).l]);
+% % %     net = trainNetwork(Sfd(:,:,1,1:Nf), cat, layers, options);
+% % %     
+% % % %     augimds = augmentedImageDatastore([ws ws], Sfd(:,:,1,1:Nf), cat,'DataAugmentation',imageAugmenter);    
+% % % %     net = trainNetwork(augimds, layers, options);
+% % %     
+% % %     fprintf(' %.02f sec\n', toc);
+% % % 
+% % %     % --- Save neural network
+% % %     
+% % %     % save(netname, 'net');
+% % % 
+% % %     % --- Classify --------------------------------------------------------
+% % %     
+% % %     fprintf('Predict ...');
+% % %     tic
+% % %     
+% % %     pred = predict(net, Sfd(:,:,1,Nf+1:end));
+% % %     
+% % %     l = pred(:,2)>=0.5;
+% % %     
+% % %     fprintf(' %.02f sec\n', toc);
+% % %     
+% % %     % --- Compare
+% % %     
+% % %     Np = numel(L)-Nf;
+% % %     Nok = nnz([L(Nf+1:end).l]'==l);
+% % %     
+% % %     ppm(iter) = (Np-Nok)/Np*numel(L);
+% % %     
+% % %     fprintf('Result: %i\n', round(ppm(iter)));
+% % %     
+% % % end
 
-    % --- Save neural network
-    
-    % save(netname, 'net');
+% IP.NNet.GUI.checkNet(L(Nf+1:end), l);
 
-    % --- Classify --------------------------------------------------------
-    
-    fprintf('Predict ...');
-    tic
-    
-    pred = predict(net, Sfd(:,:,1,Nf+1:end));
-    
-    l = pred(:,2)>=0.5;
-    
-    fprintf(' %.02f sec\n', toc);
-    
-    % --- Compare
-    
-    Np = numel(L)-Nf;
-    Nok = nnz([L(Nf+1:end).l]'==l);
-    
-    ppm(iter) = (Np-Nok)/Np*numel(L);
-    
-    fprintf('Result: %i\n', round(ppm(iter)));
-    
-end
+clf
+hold on
 
-IP.NNet.GUI.checkNet(L(Nf+1:end), l);
+plot(Nt, ppm, '.-')
 
-% clf
-% hold on
-% 
-% plot(Nt, ppm, '.-')
+ylim([0 2500])
+set(gca, 'XScale', 'log')
 
+box on
+grid on
+
+xlabel('Training set size (number of images)')
+ylabel('Numbre of errors per movie')
 

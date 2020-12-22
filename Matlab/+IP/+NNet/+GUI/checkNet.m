@@ -39,7 +39,7 @@ clf
 hold on
 
 imshow(Str.getFrame(1));
-caxis([0 3])
+caxis([0 5])
 
 scatter(x, y, 'y+')
 
