@@ -1,3 +1,5 @@
+
+
 warning('off', 'images:imshow:magnificationMustBeFitForDockedFigure');
 
 clc
@@ -6,7 +8,7 @@ clc
 
 year = 2020;
 month = 12;
-day = 15;
+day = 01;
 hour = 12;
 
 % -------------------------------------------------------------------------
@@ -14,6 +16,10 @@ hour = 12;
 DS = DataSource;
 
 % =========================================================================
+
+Video = VideoWriter([DS.Movies 'Bad_Conditions.avi'], ...
+            'Uncompressed AVI');
+open(Video);
 
 % --- Filesystem
 
@@ -26,24 +32,38 @@ fname = [dDir 'video_' num2str(hour, '%02i') '.dat'];
         
 mmf = memmapfile(fname, 'Format', {'double' [1 1] 't' ; 'uint8' [512 640] 'frame' });
 
-Video = VideoWriter([DS.Movies num2str(year, '%04i') '-' ...
-            num2str(month, '%02i') '-' ...
-            num2str(day, '%02i') ' ' num2str(hour, '%02i') 'h.avi'], ...
-            'Uncompressed AVI');
-open(Video);
 
-figure(1)
-set(gcf, 'WindowStyle','docked')
-
-for i = 1:3500
+for i = 1:500
     
     writeVideo(Video, mmf.Data(i).frame);
     
-%     imshow(mmf.Data(i).frame);
-%     title("Frame " + i + " / " + numel(mmf.Data), 'Interpreter', 'LaTeX')
-%         
-%     drawnow limitrate
+end
+
+year = 2020;
+month = 12;
+day = 15;
+hour = 12;
+
+% --- Filesystem
+
+dDir = [DS.Data num2str(year, '%04i') filesep ...
+            num2str(month, '%02i') filesep ...
+            num2str(day, '%02i') filesep]; 
+fname = [dDir 'video_' num2str(hour, '%02i') '.dat'];
+        
+% --- Data file
+        
+mmf = memmapfile(fname, 'Format', {'double' [1 1] 't' ; 'uint8' [512 640] 'frame' });
+
+
+for i = 1:500
+    
+    writeVideo(Video, mmf.Data(i).frame);
     
 end
+
+
+
+
 
 close(Video);
